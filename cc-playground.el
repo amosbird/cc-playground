@@ -45,7 +45,7 @@ By default it will be created as snippet.cpp"
   :group 'cc-playground)
 
 (defcustom cc-playground-confirm-deletion t
-  "Non-nil means you will be asked for confirmation on the snippet deletion with `cc-playground-rm [S-return]'.
+  "Non-nil prompts confirmation on the snippet deletion with `cc-playground-rm'.
 
 By default confirmation required."
   :type 'boolean
@@ -54,6 +54,23 @@ By default confirmation required."
 (defcustom cc-playground-basedir "~/cc/playground"
   "Base directory for playground snippets."
   :type 'file
+  :group 'cc-playground)
+
+(defcustom cc-compile-command "clang++ -std=c++17 *.cpp -lpthread -ldl && ./a.out"
+  "Default command for playground to compile and run snippets."
+  :type 'string
+  :group 'cc-playground)
+
+(defcustom cc-template "#include <iostream>
+
+using namespace std;
+
+int main(int argc, char *argv[]) {
+	cout << \"Result: \" << endl;
+}
+"
+  "Default template for playground."
+  :type 'string
   :group 'cc-playground)
 
 (define-minor-mode cc-playground-mode
@@ -77,13 +94,13 @@ By default confirmation required."
   (cc-playground-exec))
 
 (defun cc-playground-exec ()
-  "Save the buffer then runs clang compiler for executing the code."
+  "Save the buffer then run clang compiler for executing the code."
   (interactive)
   (if (cc-playground-inside)
 	  (progn
 		(save-buffer t)
 		(make-local-variable 'compile-command)
-		(compile "clang++ -std=c++17 *.cpp && ./a.out"))))
+		(compile cc-compile-command))))
 
 ;;;###autoload
 (defun cc-playground ()
@@ -91,21 +108,15 @@ By default confirmation required."
   (interactive)
   (let ((snippet-file-name (cc-playground-snippet-file-name)))
     (switch-to-buffer (create-file-buffer snippet-file-name))
-	(cc-playground-insert-template-head "snippet of code")
-(insert "#include <iostream>
-
-using namespace std;
-
-int main() {
-	cout << \"Result: \" << endl;
-}
-")
+    (cc-playground-insert-template-head "snippet of code")
+    (insert cc-template)
     (backward-char 3)
     (c++-mode)
     (cc-playground-mode)
     (set-visited-file-name snippet-file-name t)))
 
 (defun cc-playground-insert-template-head (description)
+  "Insert DESCRIPTION in the beginning of new snippets."
   (insert "// -*- mode:c++;mode:cc-playground -*-
 // " description " @ " (time-stamp-string "%:y-%02m-%02d %02H:%02M:%02S") "
 
@@ -136,7 +147,7 @@ int main() {
   (cc-playground-rm))
 
 (defun cc-playground-snippet-unique-dir (prefix)
-  "Get unique directory under `cc-playground-basedir`."
+  "Get unique directory with PREFIX under `cc-playground-basedir`."
   (let ((dir-name (concat cc-playground-basedir "/"
                           (if (and prefix cc-playground-ask-file-name) (concat prefix "-"))
                           (time-stamp-string "at-%:y-%02m-%02d-%02H%02M%02S"))))
