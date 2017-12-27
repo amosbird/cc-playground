@@ -1,6 +1,12 @@
 ;;; cc-playground.el --- Local C/C++ playground for short snippets.
 
 ;; Copyright (C) 2017 Amos Bird
+;;   ___                       ______ _         _
+;;  / _ \                      | ___ (_)       | |
+;; / /_\ \_ __ ___   ___  ___  | |_/ /_ _ __ __| |
+;; |  _  | '_ ` _ \ / _ \/ __| | ___ \ | '__/ _` |
+;; | | | | | | | | | (_) \__ \ | |_/ / | | | (_| |
+;; \_| |_/_| |_| |_|\___/|___/ \____/|_|_|  \__,_|
 
 ;; Author: Amos Bird <amosbird@gmail.com>
 ;; URL: https://github.com/amosbird/cc-playground
@@ -87,8 +93,8 @@ int main(int argc, char *argv[]) {
   :type 'hook
   :group 'cc-playground)
 
-(defun reload-file-variables-for-current-buffer ()
-  "reload dir locals for the current buffer"
+(defun cc-playground--reload-file-variables-for-current-buffer ()
+  "Reload dir locals for the current buffer."
   (interactive)
   (let ((enable-local-variables :all))
     (hack-local-variables)))
@@ -100,8 +106,8 @@ int main(int argc, char *argv[]) {
   :keymap '(([C-return] . cc-playground-exec)
             ([S-return] . cc-playground-rm))
   (if cc-playground-mode
-      (add-hook 'after-save-hook #'reload-file-variables-for-current-buffer nil t)
-    (remove-hook 'after-save-hook #'reload-file-variables-for-current-buffer t)))
+      (add-hook 'after-save-hook #'cc-playground--reload-file-variables-for-current-buffer nil t)
+    (remove-hook 'after-save-hook #'cc-playground--reload-file-variables-for-current-buffer t)))
 
 (defun cc-playground-snippet-file-name(&optional snippet-name)
   (let ((file-name (cond (snippet-name)
@@ -186,4 +192,5 @@ int main(int argc, char *argv[]) {
       (bound-and-true-p cc-playground-mode)))
 
 (provide 'cc-playground)
+
 ;;; cc-playground.el ends here
