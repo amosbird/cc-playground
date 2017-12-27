@@ -61,14 +61,17 @@ By default confirmation required."
   :type 'string
   :group 'cc-playground)
 
-(defcustom cc-template "#include <iostream>
+(defcustom cc-template (concat "#include <iostream>
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
     cout << \"Result: \" << endl;
 }
-"
+
+/* Local Variables:  */
+/* cc-compile-command: " cc-compile-command " */
+/* End:              */")
   "Default template for playground."
   :type 'string
   :group 'cc-playground)
@@ -119,7 +122,8 @@ int main(int argc, char *argv[]) {
     (switch-to-buffer (create-file-buffer snippet-file-name))
     (cc-playground-insert-template-head "snippet of code")
     (insert cc-template)
-    (backward-char 3)
+    (forward-line -5)
+    (forward-word)
     (c++-mode)
     (cc-playground-mode)
     (set-visited-file-name snippet-file-name t))
