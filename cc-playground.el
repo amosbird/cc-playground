@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 }
 
 /* Local Variables:  */
-/* cc-compile-command: " cc-compile-command " */
+/* cc-compile-command: \"" cc-compile-command "\" */
 /* End:              */")
   "Default template for playground."
   :type 'string
@@ -86,12 +86,21 @@ int main(int argc, char *argv[]) {
   :type 'hook
   :group 'cc-playground)
 
+(defun reload-file-variables-for-current-buffer ()
+  "reload dir locals for the current buffer"
+  (interactive)
+  (let ((enable-local-variables :all))
+    (hack-local-variables)))
+
 (define-minor-mode cc-playground-mode
   "A place for playing with c++ code."
   :init-value nil
   :lighter "Play(C/C++)"
   :keymap '(([C-return] . cc-playground-exec)
-            ([S-return] . cc-playground-rm)))
+            ([S-return] . cc-playground-rm))
+  (if cc-playground-mode
+      (add-hook 'after-save-hook #'reload-file-variables-for-current-buffer nil t)
+    (remove-hook 'after-save-hook #'reload-file-variables-for-current-buffer t)))
 
 (defun cc-playground-snippet-file-name(&optional snippet-name)
   (let ((file-name (cond (snippet-name)
@@ -123,7 +132,7 @@ int main(int argc, char *argv[]) {
     (cc-playground-insert-template-head "snippet of code")
     (insert cc-template)
     (forward-line -5)
-    (forward-word)
+    (forward-word 2)
     (c++-mode)
     (cc-playground-mode)
     (set-visited-file-name snippet-file-name t))
