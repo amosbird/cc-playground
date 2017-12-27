@@ -66,11 +66,21 @@ By default confirmation required."
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	cout << \"Result: \" << endl;
+    cout << \"Result: \" << endl;
 }
 "
   "Default template for playground."
   :type 'string
+  :group 'cc-playground)
+
+(defcustom cc-playground-hook nil
+  "Hook when entering playground."
+  :type 'hook
+  :group 'cc-playground)
+
+(defcustom cc-playground-rm-hook nil
+  "Hook when leaving playground."
+  :type 'hook
   :group 'cc-playground)
 
 (define-minor-mode cc-playground-mode
@@ -87,7 +97,6 @@ int main(int argc, char *argv[]) {
                          ("snippet"))))
     (concat (cc-playground-snippet-unique-dir file-name) "/" file-name ".cpp")))
 
-;
 (defun cc-playground-save-and-run ()
   "Obsoleted by cc-playground-exec."
   (interactive)
@@ -97,10 +106,10 @@ int main(int argc, char *argv[]) {
   "Save the buffer then run clang compiler for executing the code."
   (interactive)
   (if (cc-playground-inside)
-	  (progn
-		(save-buffer t)
-		(make-local-variable 'compile-command)
-		(compile cc-compile-command))))
+      (progn
+        (save-buffer t)
+        (make-local-variable 'compile-command)
+        (compile cc-compile-command))))
 
 ;;;###autoload
 (defun cc-playground ()
@@ -113,7 +122,8 @@ int main(int argc, char *argv[]) {
     (backward-char 3)
     (c++-mode)
     (cc-playground-mode)
-    (set-visited-file-name snippet-file-name t)))
+    (set-visited-file-name snippet-file-name t))
+  (run-hooks 'cc-playground-hook))
 
 (defun cc-playground-insert-template-head (description)
   "Insert DESCRIPTION in the beginning of new snippets."
@@ -131,18 +141,19 @@ int main(int argc, char *argv[]) {
   (interactive)
   (if (cc-playground-inside)
       (if (or (not cc-playground-confirm-deletion)
-			  (y-or-n-p (format "Do you want delete whole snippet dir %s? "
-								(file-name-directory (buffer-file-name)))))
-		  (progn
-			(save-buffer)
-			(delete-directory (file-name-directory (buffer-file-name)) t t)
-			(kill-buffer)))
-	(message "Won't delete this! Because %s is not under the path %s. Remove the snippet manually!"
-			 (buffer-file-name) cc-playground-basedir)))
+              (y-or-n-p (format "Do you want delete whole snippet dir %s? "
+                                (file-name-directory (buffer-file-name)))))
+          (progn
+            (run-hooks 'cc-playground-rm-hook)
+            (save-buffer)
+            (delete-directory (file-name-directory (buffer-file-name)) t t)
+            (kill-buffer)))
+    (message "Won't delete this! Because %s is not under the path %s. Remove the snippet manually!"
+             (buffer-file-name) cc-playground-basedir)))
 
 ;;;###autoload
 (defun cc-playground-remove-current-snippet ()
-    "Obsoleted by `cc-playground-rm'."
+  "Obsoleted by `cc-playground-rm'."
   (interactive)
   (cc-playground-rm))
 
@@ -157,7 +168,7 @@ int main(int argc, char *argv[]) {
 (defun cc-playground-inside ()
   "Is the current buffer is valid cc-playground buffer."
   (if (string-match-p (file-truename cc-playground-basedir) (file-truename (buffer-file-name)))
-	  (bound-and-true-p cc-playground-mode)))
+      (bound-and-true-p cc-playground-mode)))
 
 (provide 'cc-playground)
 ;;; cc-playground.el ends here
