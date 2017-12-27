@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
     (c++-mode)
     (cc-playground-mode)
     (set-visited-file-name snippet-file-name t))
+  (save-buffer)
   (run-hooks 'cc-playground-hook))
 
 (defun cc-playground-insert-template-head (description)
