@@ -58,6 +58,7 @@ By default confirmation required."
 
 (defcustom cc-compile-command "clang++ -std=c++17 *.cpp -lpthread -ldl && ./a.out"
   "Default command for playground to compile and run snippets."
+  :safe (lambda (x) (stringp x))
   :type 'string
   :group 'cc-playground)
 
