@@ -72,12 +72,11 @@ int main(int argc, char *argv[]) {
 
 /*
 Local Variables:
-cc-compile-command: \" ( [ './a.out' -nt *.cpp ] || \
-clang++ -std=c++17 *.cpp \
--I/usr/local/include \
--lpthread \
--ldl \
--lasync++ \
+cc-compile-command: \" ( [ './a.out' -nt *.cpp ] || \\
+clang++ -std=c++17 *.cpp \\
+-I/usr/local/include \\
+-lpthread \\
+-ldl \\
 ) && ./a.out\"
 End:
  */"
