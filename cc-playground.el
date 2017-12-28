@@ -62,13 +62,7 @@ By default confirmation required."
   :type 'file
   :group 'cc-playground)
 
-(defcustom cc-compile-command "clang++ -std=c++17 *.cpp -lpthread -ldl && ./a.out"
-  "Default command for playground to compile and run snippets."
-  :safe (lambda (x) (stringp x))
-  :type 'string
-  :group 'cc-playground)
-
-(defcustom cc-template (concat "#include <iostream>
+(defcustom cc-template "#include <iostream>
 
 using namespace std;
 
@@ -76,9 +70,17 @@ int main(int argc, char *argv[]) {
     cout << \"Result: \" << endl;
 }
 
-/* Local Variables:  */
-/* cc-compile-command: \"" cc-compile-command "\" */
-/* End:              */")
+/*
+Local Variables:
+cc-compile-command: \" ( [ './a.out' -nt *.cpp ] || \
+clang++ -std=c++17 *.cpp \
+-I/usr/local/include \
+-lpthread \
+-ldl \
+-lasync++ \
+) && ./a.out\"
+End:
+ */"
   "Default template for playground."
   :type 'string
   :group 'cc-playground)
@@ -120,6 +122,8 @@ int main(int argc, char *argv[]) {
   "Obsoleted by cc-playground-exec."
   (interactive)
   (cc-playground-exec))
+
+(defvar cc-compile-command "echo should not run outside cc-playground")
 
 (defun cc-playground-exec ()
   "Save the buffer then run clang compiler for executing the code."
