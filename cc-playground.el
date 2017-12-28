@@ -66,7 +66,9 @@ By default confirmation required."
 #include <iostream>
 #include <chrono>
 
-template <typename Resolution = std::chrono::seconds>
+using namespace std;
+
+template <typename Resolution = chrono::seconds>
 class Measure {
 public:
     Measure() : t1(std::chrono::steady_clock::now()) {}
@@ -75,7 +77,7 @@ public:
         std::cerr << std::chrono::duration_cast<Resolution>(t2 - t1).count();
     }
 private:
-    std::chrono::time_point<std::chrono::steady_clock> t1;
+    std::chrono::time_point<chrono::steady_clock> t1;
 };
 
 int main(int argc, char *argv[]) {
