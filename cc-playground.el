@@ -141,7 +141,7 @@ End:
     (switch-to-buffer (create-file-buffer snippet-file-name))
     (cc-playground-insert-template-head "snippet of code")
     (insert cc-template)
-    (forward-line -14)
+    (forward-line -13)
     (forward-word 2)
     (c++-mode)
     (cc-playground-mode)

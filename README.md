@@ -29,10 +29,28 @@ based on [go-playground](https://github.com/grafov/go-playground)
             :require-match t
             :action #'+amos/add-include))
 
+(defun +amos/add-library-link (library)
+  "Add an -llibrary line for `library' near top of file, avoiding duplicates."
+  (interactive "M#include: ")
+  (let ((lib (format "%s \\" library)))
+    (save-excursion
+      (if (search-forward lib nil t)
+          (message "You already have %s." lib)
+        (when (re-search-forward "^-l.*\\\\$" nil 'stop-at-the-end 1)
+          (forward-line)
+          (beginning-of-line))
+        (insert lib)
+        (newline)))))
+
+(defun +amos/ivy-add-library-link ()
+  (interactive)
+  (ivy-read "Library: " (split-string (shell-command-to-string "ldconfig -p | awk ' $1 ~ /^lib.*so$/ { print gensub(/^lib(.*).so$/, \"-l\\\\1\", 1, $1)}'"))
+            :require-match t
+            :action #'+amos/add-library-link))
+
 (use-package cc-playground
   :commands (cc-playground cc-playground-mode)
   :config
-  (setq cc-playground-confirm-deletion nil)
   (add-hook 'cc-playground-hook (lambda () (interactive) (shell-command (format "rc --project-root=%s -c clang++ -std=c++17 -x c++ %s" (file-name-directory buffer-file-name) buffer-file-name))))
   (add-hook 'cc-playground-rm-hook (lambda () (interactive) (shell-command (format "rc -W %s" (file-name-directory buffer-file-name))))))
 ```
