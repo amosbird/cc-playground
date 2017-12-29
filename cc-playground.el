@@ -64,21 +64,8 @@ By default confirmation required."
 
 (defcustom cc-template "
 #include <iostream>
-#include <chrono>
 
 using namespace std;
-
-template <typename Resolution = chrono::seconds>
-class Measure {
-public:
-    Measure() : t1(std::chrono::steady_clock::now()) {}
-    ~Measure() {
-        auto t2 = std::chrono::steady_clock::now();
-        std::cerr << std::chrono::duration_cast<Resolution>(t2 - t1).count();
-    }
-private:
-    std::chrono::time_point<chrono::steady_clock> t1;
-};
 
 int main(int argc, char *argv[]) {
 }
