@@ -93,7 +93,7 @@ End:
   :type 'hook
   :group 'cc-playground)
 
-(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || clang++ -std=c++17 *.cpp -g -O0 -o dbg %s) && fish -c 'tmux switch-client -t amos; tmuxgdb -ex=start ./dbg'")
+(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || clang++ -std=c++17 *.cpp -g -O0 -o dbg %s) && (tmux switch-client -t amos; tmux run -t amos fish -c 'tmuxgdb -ex=start ./dbg')")
 (defvar cc-release-command "( [ './rel' -nt *.cpp ] || clang++ -std=c++17 *.cpp -o rel %s) && ./rel")
 
 (defun cc-playground--reload-file-variables-for-current-buffer ()
