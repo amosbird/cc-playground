@@ -93,7 +93,7 @@ End:
   :type 'hook
   :group 'cc-playground)
 
-(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || clang++ -std=c++17 *.cpp -g -O0 -o dbg %s) && tmuxgdb ./dbg")
+(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || clang++ -std=c++17 *.cpp -g -O0 -o dbg %s) && fish -c tmuxgdb ./dbg")
 (defvar cc-release-command "( [ './rel' -nt *.cpp ] || clang++ -std=c++17 *.cpp -o rel %s) && ./rel")
 
 (defun cc-playground--reload-file-variables-for-current-buffer ()
@@ -108,6 +108,7 @@ End:
   :lighter "Play(C/C++)"
   :keymap '(([C-return] . cc-playground-exec)
             ([M-return] . cc-playground-debug)
+            ([M-RET] . cc-playground-debug)
             ([S-return] . cc-playground-rm))
   (if cc-playground-mode
       (add-hook 'after-save-hook #'cc-playground--reload-file-variables-for-current-buffer nil t)
