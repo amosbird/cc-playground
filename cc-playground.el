@@ -108,7 +108,7 @@ End:
   :lighter "Play(C/C++)"
   :keymap '(([C-return] . cc-playground-exec)
             ([M-return] . cc-playground-debug)
-            ([M-RET] . cc-playground-debug)
+            ([?\M-\r] . cc-playground-debug)
             ([S-return] . cc-playground-rm))
   (if cc-playground-mode
       (add-hook 'after-save-hook #'cc-playground--reload-file-variables-for-current-buffer nil t)
