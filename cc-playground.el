@@ -72,12 +72,11 @@ int main(int argc, char *argv[]) {
 
 /*
 Local Variables:
-cc-compile-command: \" ( [ './a.out' -nt *.cpp ] || \\
-clang++ -std=c++17 *.cpp \\
+cc-compile-command: \" \\
 -I/usr/local/include \\
 -lpthread \\
 -ldl \\
-) && ./a.out\"
+\"
 End:
  */"
   "Default template for playground."
@@ -94,6 +93,9 @@ End:
   :type 'hook
   :group 'cc-playground)
 
+(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || clang++ -std=c++17 *.cpp -g -O0 -o dbg %s) && tmuxgdb ./dbg")
+(defvar cc-release-command "( [ './rel' -nt *.cpp ] || clang++ -std=c++17 *.cpp -o rel %s) && ./rel")
+
 (defun cc-playground--reload-file-variables-for-current-buffer ()
   "Reload dir locals for the current buffer."
   (interactive)
@@ -105,22 +107,19 @@ End:
   :init-value nil
   :lighter "Play(C/C++)"
   :keymap '(([C-return] . cc-playground-exec)
+            ([M-return] . cc-playground-debug)
             ([S-return] . cc-playground-rm))
   (if cc-playground-mode
       (add-hook 'after-save-hook #'cc-playground--reload-file-variables-for-current-buffer nil t)
     (remove-hook 'after-save-hook #'cc-playground--reload-file-variables-for-current-buffer t)))
 
 (defun cc-playground-snippet-file-name(&optional snippet-name)
+  "Get snippet file name from SNIPPET-NAME. Generate a random one if nil."
   (let ((file-name (cond (snippet-name)
                          (cc-playground-ask-file-name
                           (read-string "C++ Playground filename: "))
                          ("snippet"))))
     (concat (cc-playground-snippet-unique-dir file-name) "/" file-name ".cpp")))
-
-(defun cc-playground-save-and-run ()
-  "Obsoleted by cc-playground-exec."
-  (interactive)
-  (cc-playground-exec))
 
 (defvar cc-compile-command "echo should not run outside cc-playground")
 
@@ -131,7 +130,16 @@ End:
       (progn
         (save-buffer t)
         (make-local-variable 'compile-command)
-        (compile cc-compile-command))))
+        (compile (format cc-release-command cc-compile-command)))))
+
+(defun cc-playground-debug ()
+  "Save the buffer then run tmuxgdb for debugging the code."
+  (interactive)
+  (if (cc-playground-inside)
+      (progn
+        (save-buffer t)
+        (make-local-variable 'compile-command)
+        (compile (format cc-debug-command cc-compile-command)))))
 
 ;;;###autoload
 (defun cc-playground ()
@@ -141,7 +149,7 @@ End:
     (switch-to-buffer (create-file-buffer snippet-file-name))
     (cc-playground-insert-template-head "snippet of code")
     (insert cc-template)
-    (forward-line -13)
+    (forward-line -12)
     (forward-word 2)
     (c++-mode)
     (cc-playground-mode)
