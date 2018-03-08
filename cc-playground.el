@@ -72,6 +72,8 @@ int main(int argc, char *argv[]) {
 
 /*
 Local Variables:
+cc-dbg: \"g++ -g -O0\"
+cc-rel: \"g++\"
 cc-compile-command: \" \\
 -I/usr/local/include \\
 -lpthread \\
@@ -93,8 +95,8 @@ End:
   :type 'hook
   :group 'cc-playground)
 
-(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || clang++ -std=c++17 *.cpp -g -O0 -o dbg %s) && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./dbg'\")")
-(defvar cc-release-command "( [ './rel' -nt *.cpp ] || clang++ -std=c++17 *.cpp -o rel %s) && ./rel")
+(defvar cc-debug-command "( [ './dbg' -nt *.cpp ] || %s -std=c++17 *.cpp -o dbg %s) && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./dbg'\")")
+(defvar cc-release-command "( [ './rel' -nt *.cpp ] || %s -std=c++17 *.cpp -o rel %s) && ./rel")
 
 (defun cc-playground--reload-file-variables-for-current-buffer ()
   "Reload dir locals for the current buffer."
@@ -122,7 +124,9 @@ End:
                          ("snippet"))))
     (concat (cc-playground-snippet-unique-dir file-name) "/" file-name ".cpp")))
 
-(defvar cc-compile-command "echo should not run outside cc-playground")
+(defvar cc-compile-command)
+(defvar cc-dbg "echo should not run outside cc-playground; exit 1;")
+(defvar cc-rel "echo should not run outside cc-playground; exit 1;")
 
 (defun cc-playground-exec ()
   "Save the buffer then run clang compiler for executing the code."
@@ -131,7 +135,7 @@ End:
       (progn
         (save-buffer t)
         (make-local-variable 'compile-command)
-        (compile (format cc-release-command cc-compile-command)))))
+        (compile (format cc-release-command cc-rel cc-compile-command)))))
 
 (defun cc-playground-debug ()
   "Save the buffer then run tmuxgdb for debugging the code."
@@ -140,7 +144,7 @@ End:
       (progn
         (save-buffer t)
         (make-local-variable 'compile-command)
-        (compile (format cc-debug-command cc-compile-command)))))
+        (compile (format cc-debug-command cc-dbg cc-compile-command)))))
 
 ;;;###autoload
 (defun cc-playground ()
@@ -150,7 +154,7 @@ End:
     (switch-to-buffer (create-file-buffer snippet-file-name))
     (cc-playground-insert-template-head "snippet of code")
     (insert cc-template)
-    (forward-line -12)
+    (forward-line -14)
     (forward-word 2)
     (c++-mode)
     (cc-playground-mode)
