@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
 
 /*
 Local Variables:
-cc-dbg: \"g++ -g -O0\"
-cc-rel: \"g++\"
+cc-dbg: \"g++ -fopenmp -g -O0\"
+cc-rel: \"g++ -fopenmp\"
 cc-compile-command: \" \\
 -I/usr/local/include \\
 -lpthread \\
