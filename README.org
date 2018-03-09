@@ -1,0 +1,9 @@
+* c++ playground in emacs (WIP)
+
+Currently it's tightly coupled with [[https://github.com/hlissner/doom-emacs][Doom Emacs]]
+
+** Requirements
+
+1. cquery
+
+2. tmuxgdb
