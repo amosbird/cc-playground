@@ -4,7 +4,6 @@
 
 #include <gtest/gtest.h>
 using namespace std;
-namespace {
 
 class SnippetTest : public testing::Test {
 protected:
@@ -30,5 +29,3 @@ TEST_F(SnippetTest, foo) {
     // simple test
     ASSERT_EQ(10, 10);
 }
-
-}  // namespace
