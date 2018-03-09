@@ -169,7 +169,7 @@ int mymain(int argc, char *argv[]) {
     (cc-playground-mode)
     (set-visited-file-name snippet-file-name t)
     (let* ((file-name (locate-library "cc-playground"))
-           (dir-name (file-name-directory file-name))
+           (dir-name (concat (file-name-directory file-name) "templates/"))
            (dst-dir (file-name-directory snippet-file-name))
            (dirlocal (concat dir-name ".dir-locals.el"))
            (makefile (concat dir-name "Makefile"))
