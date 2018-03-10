@@ -4,7 +4,7 @@ CXX_DBG_FLAGS = $(CXXFLAGS) -g
 CXX ?= g++
 LD = $(CXX)
 LDFLAGS := $(CXXFLAGS) $(LDFLAGS)
-LD_TEST_FLAGS = $(LDFLAGS) -lgtest -lgtest_main
+LD_TEST_FLAGS = $(LDFLAGS) -lgtest_main -lgtest
 
 deb_test: test.deb.o snippet.deb.o
 	$(LD) $(LD_TEST_FLAGS) $^ -o $@
