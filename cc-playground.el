@@ -156,6 +156,23 @@ int mymain(int argc, char *argv[]) {
         (make-local-variable 'compile-command)
         (compile (format cc-debug-test-command cc-exec cc-flags cc-links)))))
 
+(defun cc-playground-add-or-modify-tag (name)
+  (interactive "MTag Name: ")
+  (if (cc-playground-inside)
+      (let* ((oname (string-trim-right (shell-command-to-string (concat "basename " default-directory))))
+             (nn (concat default-directory "../"))
+             (l (split-string oname ":")))
+        (if (= (length l) 1)
+            (dired-rename-file default-directory (concat nn name ":" oname) nil)
+          (dired-rename-file default-directory (concat nn name ":" (cadr l)) nil)))))
+
+;;;###autoload
+(defun cc-playground-find-snippet ()
+  (interactive)
+  (ivy-read "Browse cc snippet: "
+            (mapcar (lambda (a) (cons (file-name-nondirectory a) a)) (directory-files cc-playground-basedir t "^[^.]"))
+            :action (lambda (c) (find-file (concat (cdr c) "/snippet.cpp")))))
+
 ;;;###autoload
 (defun cc-playground ()
   "Run playground for C++ language in a new buffer."
@@ -214,7 +231,7 @@ int mymain(int argc, char *argv[]) {
   "Get unique directory with PREFIX under `cc-playground-basedir`."
   (let ((dir-name (concat cc-playground-basedir "/"
                           (if (and prefix cc-playground-ask-file-name) (concat prefix "-"))
-                          (time-stamp-string "at-%:y-%02m-%02d-%02H%02M%02S"))))
+                          (time-stamp-string "default:%:y-%02m-%02d-%02H%02M%02S"))))
     (make-directory dir-name t)
     dir-name))
 
@@ -282,7 +299,6 @@ int mymain(int argc, char *argv[]) {
           (save-buffer))))))
 
 (defun cc-playground-change-compiler ()
-  "TODO add argument to change."
   (interactive)
   (let ((buffer (find-file-noselect (concat default-directory ".dir-locals.el"))))
     (doom-popup-buffer buffer '(:align t :autoclose t :autokill t :select t))
@@ -294,3 +310,4 @@ int mymain(int argc, char *argv[]) {
 (provide 'cc-playground)
 
 ;;; cc-playground.el ends here
+
