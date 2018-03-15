@@ -88,6 +88,7 @@ int mymain(int argc, char *argv[]) {
 (defvar cc-debug-test-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make deb_test && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./deb_test'\")")
 (defvar cc-release-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make rel && printf \"\\n--------------------\\n\\n\" && ./rel")
 (defvar cc-release-test-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make rel_test && printf \"\\n--------------------\\n\\n\" && ./rel_test")
+(defvar cc-bench-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make bench && printf \"\\n--------------------\\n\\n\" && ./bench  --benchmark_color=false")
 ;; (defvar cc-release-command "( [ './rel' -nt *.cpp ] || %s -std=c++17 *.cpp -o rel %s) && ./rel")
 
 (defun cc-switch-between-src-and-test ()
@@ -156,7 +157,17 @@ int mymain(int argc, char *argv[]) {
         (make-local-variable 'compile-command)
         (compile (format cc-debug-test-command cc-exec cc-flags cc-links)))))
 
+(defun cc-playground-bench ()
+  "Save the buffer then run clang compiler for executing the test."
+  (interactive)
+  (if (cc-playground-inside)
+      (progn
+        (save-buffer t)
+        (make-local-variable 'compile-command)
+        (compile (format cc-bench-command cc-exec cc-flags cc-links)))))
+
 (defun cc-playground-add-or-modify-tag (name)
+  "Adding or modifying existing tag of a snippet using NAME."
   (interactive "MTag Name: ")
   (if (cc-playground-inside)
       (let* ((oname (string-trim-right (shell-command-to-string (concat "basename " default-directory))))
@@ -168,6 +179,7 @@ int mymain(int argc, char *argv[]) {
 
 ;;;###autoload
 (defun cc-playground-find-snippet ()
+  "List all snippets using `ivy-read'."
   (interactive)
   (ivy-read "Browse cc snippet: "
             (mapcar (lambda (a) (cons (file-name-nondirectory a) a)) (directory-files cc-playground-basedir t "^[^.]"))
@@ -191,10 +203,12 @@ int mymain(int argc, char *argv[]) {
            (dirlocal (concat dir-name ".dir-locals.el"))
            (makefile (concat dir-name "Makefile"))
            (mainfile (concat dir-name "main.cpp"))
+           (benchfile (concat dir-name "bench.cpp"))
            (testfile (concat dir-name "test.cpp")))
       (copy-file dirlocal dst-dir)
       (copy-file makefile dst-dir)
       (copy-file mainfile dst-dir)
+      (copy-file benchfile dst-dir)
       (copy-file testfile dst-dir))
     (save-buffer)
     (my-reload-dir-locals-for-all-buffer-in-this-directory)
@@ -299,6 +313,7 @@ int mymain(int argc, char *argv[]) {
           (save-buffer))))))
 
 (defun cc-playground-change-compiler ()
+  "Change the compiler."
   (interactive)
   (let ((buffer (find-file-noselect (concat default-directory ".dir-locals.el"))))
     (doom-popup-buffer buffer '(:align t :autoclose t :autokill t :select t))

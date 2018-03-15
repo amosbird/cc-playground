@@ -4,19 +4,21 @@ CXX_DBG_FLAGS = $(CXXFLAGS) -g
 CXX ?= g++
 LD = $(CXX)
 LDFLAGS := $(CXXFLAGS) $(LDFLAGS)
-LD_TEST_FLAGS = $(LDFLAGS) -lgtest_main -lgtest
 
 deb_test: test.deb.o snippet.deb.o
-	$(LD) $(LD_TEST_FLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LDFLAGS) -lgtest_main -lgtest
 
 rel_test: test.rel.o snippet.rel.o
-	$(LD) $(LD_TEST_FLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LDFLAGS) -lgtest_main -lgtest
 
 deb: main.deb.o snippet.deb.o
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LDFLAGS)
 
 rel: main.rel.o snippet.rel.o
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LDFLAGS)
+
+bench: bench.rel.o snippet.rel.o
+	$(LD) $^ -o $@ $(LDFLAGS) -lbenchmark
 
 %.deb.o: %.cpp .dir-locals.el
 	$(CXX) $(CPPFLAGS) $(CXX_DBG_FLAGS) -c $< -o $@
