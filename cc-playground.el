@@ -173,6 +173,7 @@ int mymain(int argc, char *argv[]) {
       (let* ((oname (string-trim-right (shell-command-to-string (concat "basename " default-directory))))
              (nn (concat default-directory "../"))
              (l (split-string oname ":")))
+        (fundamental-mode) ;; weird bug when renaming directory
         (if (= (length l) 1)
             (dired-rename-file default-directory (concat nn name ":" oname) nil)
           (dired-rename-file default-directory (concat nn name ":" (cadr l)) nil)))))
