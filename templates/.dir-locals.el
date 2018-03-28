@@ -4,7 +4,6 @@
   (cc-flags . " \
 -std=c++17 \
 -fopenmp \
--I/usr/local/include \
 ")
   (cc-links . " \
 -lpthread \

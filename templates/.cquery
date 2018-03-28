@@ -3,9 +3,5 @@
 %cpp -std=c++17
 
 # Includes
--I/usr/local/bin/../lib/gcc/x86_64-pc-linux-gnu/7.3.0/../../../../include/c++/7.3.0
--I/usr/local/bin/../lib/gcc/x86_64-pc-linux-gnu/7.3.0/../../../../include/c++/7.3.0/x86_64-pc-linux-gnu
--I/usr/local/bin/../lib/gcc/x86_64-pc-linux-gnu/7.3.0/../../../../include/c++/7.3.0/backward
 -I/usr/local/include
--I/usr/local/lib/clang/7.0.0/include
 -I/usr/include

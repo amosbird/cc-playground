@@ -121,50 +121,52 @@ int mymain(int argc, char *argv[]) {
 (defvar cc-links)
 (defvar cc-exec)
 
-(defun cc-playground-exec ()
-  "Save the buffer then run clang compiler for executing the code."
-  (interactive)
+(defun cc-playground-run (comm)
+  "COMM."
   (if (cc-playground-inside)
       (progn
         (save-buffer t)
         (make-local-variable 'compile-command)
-        (compile (format cc-release-command cc-exec cc-flags cc-links)))))
+        (let ((include-dirs (getenv "cquery_include_dirs"))
+              (cc-flags cc-flags))
+          (dolist (s (split-string include-dirs))
+            (setq cc-flags (concat cc-flags " -I" s " ")))
+          (pcase comm
+            ('exec
+             (compile (format cc-release-command cc-exec cc-flags cc-links)))
+            ('debug
+             (compile (format cc-debug-command cc-exec cc-flags cc-links)))
+            ('test
+             (compile (format cc-release-test-command cc-exec cc-flags cc-links)))
+            ('debug-test
+             (compile (format cc-debug-test-command cc-exec cc-flags cc-links)))
+            ('bench
+             (compile (format cc-bench-command cc-exec cc-flags cc-links))))))))
+
+(defun cc-playground-exec ()
+  "Save the buffer then run clang compiler for executing the code."
+  (interactive)
+  (cc-playground-run 'exec))
 
 (defun cc-playground-debug ()
   "Save the buffer then run tmuxgdb for debugging the code."
   (interactive)
-  (if (cc-playground-inside)
-      (progn
-        (save-buffer t)
-        (make-local-variable 'compile-command)
-        (compile (format cc-debug-command cc-exec cc-flags cc-links)))))
+  (cc-playground-run 'debug))
 
 (defun cc-playground-exec-test ()
   "Save the buffer then run clang compiler for executing the test."
   (interactive)
-  (if (cc-playground-inside)
-      (progn
-        (save-buffer t)
-        (make-local-variable 'compile-command)
-        (compile (format cc-release-test-command cc-exec cc-flags cc-links)))))
+  (cc-playground-run 'test))
 
 (defun cc-playground-debug-test ()
   "Save the buffer then run tmuxgdb for debugging the test."
   (interactive)
-  (if (cc-playground-inside)
-      (progn
-        (save-buffer t)
-        (make-local-variable 'compile-command)
-        (compile (format cc-debug-test-command cc-exec cc-flags cc-links)))))
+  (cc-playground-run 'debug-test))
 
 (defun cc-playground-bench ()
   "Save the buffer then run clang compiler for executing the test."
   (interactive)
-  (if (cc-playground-inside)
-      (progn
-        (save-buffer t)
-        (make-local-variable 'compile-command)
-        (compile (format cc-bench-command cc-exec cc-flags cc-links)))))
+  (cc-playground-run 'bench))
 
 (defun cc-playground-add-or-modify-tag (name)
   "Adding or modifying existing tag of a snippet using NAME."
@@ -212,6 +214,10 @@ int mymain(int argc, char *argv[]) {
         (my-reload-dir-locals-for-all-buffer-in-this-directory)
         (run-hooks 'cc-playground-hook))))
 
+(defconst cc-playground--loaddir
+  (file-name-directory (or load-file-name buffer-file-name))
+  "Directory that cc-playground was loaded from.")
+
 ;;;###autoload
 (defun cc-playground ()
   "Run playground for C++ language in a new buffer."
@@ -224,8 +230,7 @@ int mymain(int argc, char *argv[]) {
     (c++-mode)
     (cc-playground-mode)
     (set-visited-file-name snippet-file-name t)
-    (let* ((file-name (locate-library "cc-playground"))
-           (dir-name (concat (file-name-directory file-name) "templates/"))
+    (let* ((dir-name (concat cc-playground--loaddir "templates/"))
            (dst-dir (file-name-directory snippet-file-name))
            (envrc (concat dir-name ".envrc"))
            (cquery (concat dir-name ".cquery"))
@@ -267,8 +272,13 @@ int mymain(int argc, char *argv[]) {
           (progn
             (run-hooks 'cc-playground-rm-hook)
             (save-buffer)
-            (delete-directory (file-name-directory (buffer-file-name)) t t)
-            (kill-buffer)))
+            (let ((dir (file-name-directory (buffer-file-name))))
+              (delete-directory dir t t)
+              (dolist (buffer (buffer-list))
+                (with-current-buffer buffer
+                  (when (equal default-directory dir)
+                    (let (kill-buffer-query-functions)
+                      (kill-buffer buffer))))))))
     (message "Won't delete this! Because %s is not under the path %s. Remove the snippet manually!"
              (buffer-file-name) cc-playground-basedir)))
 

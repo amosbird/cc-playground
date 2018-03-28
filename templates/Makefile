@@ -20,10 +20,10 @@ rel: main.rel.o snippet.rel.o
 bench: bench.rel.o snippet.rel.o
 	$(LD) $^ -o $@ $(LDFLAGS) -lbenchmark
 
-%.deb.o: %.cpp .dir-locals.el
+%.deb.o: %.cpp .dir-locals.el .envrc
 	$(CXX) $(CPPFLAGS) $(CXX_DBG_FLAGS) -c $< -o $@
 
-%.rel.o: %.cpp .dir-locals.el
+%.rel.o: %.cpp .dir-locals.el .envrc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 clean:
