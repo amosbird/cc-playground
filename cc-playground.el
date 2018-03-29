@@ -357,7 +357,7 @@ int mymain(int argc, char *argv[]) {
   "Change the compiler."
   (interactive)
   (let ((buffer (find-file-noselect (concat default-directory ".dir-locals.el"))))
-    (doom-popup-buffer buffer '(:align t :autoclose t :autokill t :select t))
+    (+popup-buffer buffer '((window-parameters (select . t))))
     (with-current-buffer buffer
       (goto-char (point-min))
       (re-search-forward "(cc-exec . \"" nil 'stop-at-the-end 1)
