@@ -6,10 +6,10 @@ LD = $(CXX)
 LDFLAGS := $(CXXFLAGS) $(LDFLAGS)
 
 deb_test: test.deb.o snippet.deb.o
-	$(LD) $^ -o $@ $(LDFLAGS) -lgtest_main -lgtest
+	$(LD) $< -o $@ $(LDFLAGS) -lgtest_main -lgtest
 
 rel_test: test.rel.o snippet.rel.o
-	$(LD) $^ -o $@ $(LDFLAGS) -lgtest_main -lgtest
+	$(LD) $< -o $@ $(LDFLAGS) -lgtest_main -lgtest
 
 deb: main.deb.o snippet.deb.o
 	$(LD) $^ -o $@ $(LDFLAGS)
@@ -18,7 +18,7 @@ rel: main.rel.o snippet.rel.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
 bench: bench.rel.o snippet.rel.o
-	$(LD) $^ -o $@ $(LDFLAGS) -lbenchmark
+	$(LD) $< -o $@ $(LDFLAGS) -lbenchmark
 
 %.deb.o: %.cpp .dir-locals.el .envrc
 	$(CXX) $(CPPFLAGS) $(CXX_DBG_FLAGS) -c $< -o $@

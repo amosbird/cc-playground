@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+#include "snippet.cpp"
 
 class MyFixture : public benchmark::Fixture {};
 
