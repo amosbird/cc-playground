@@ -174,11 +174,11 @@ int mymain(int argc, char *argv[]) {
   (if (cc-playground-inside)
       (let* ((oname (string-trim-right (shell-command-to-string (concat "basename " default-directory))))
              (nn (concat default-directory "../"))
-             (l (split-string oname ":")))
+             (l (split-string oname "^")))
         (fundamental-mode) ;; weird bug when renaming directory
         (if (= (length l) 1)
-            (dired-rename-file default-directory (concat nn name ":" oname) nil)
-          (dired-rename-file default-directory (concat nn name ":" (cadr l)) nil)))))
+            (dired-rename-file default-directory (concat nn name "^" oname) nil)
+          (dired-rename-file default-directory (concat nn name "^" (cadr l)) nil)))))
 
 ;;;###autoload
 (defun cc-playground-find-snippet ()
@@ -286,7 +286,7 @@ int mymain(int argc, char *argv[]) {
   "Get unique directory with PREFIX under `cc-playground-basedir`."
   (let ((dir-name (concat cc-playground-basedir "/"
                           (if (and prefix cc-playground-ask-file-name) (concat prefix "-"))
-                          (time-stamp-string "default:%:y-%02m-%02d-%02H%02M%02S"))))
+                          (time-stamp-string "default^%:y-%02m-%02d-%02H%02M%02S"))))
     (make-directory dir-name t)
     dir-name))
 
