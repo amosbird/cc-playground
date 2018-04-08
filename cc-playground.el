@@ -185,7 +185,10 @@ int mymain(int argc, char *argv[]) {
   "List all snippets using `ivy-read'."
   (interactive)
   (ivy-read "Browse cc snippet: "
-            (mapcar (lambda (a) (cons (file-name-nondirectory a) a)) (directory-files cc-playground-basedir t "^[^.]"))
+            (mapcar (lambda (a) (cons (file-name-nondirectory (car a)) (car a)))
+                    (sort
+                     (directory-files-and-attributes cc-playground-basedir t "^[^.]" 'nosort)
+                     #'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x)))))
             :action (lambda (c) (find-file (concat (cdr c) "/snippet.cpp")))))
 
 (defun cc-playground-copy ()
