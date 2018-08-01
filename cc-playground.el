@@ -133,15 +133,15 @@ int mymain(int argc, char *argv[]) {
             (setq cc-flags (concat cc-flags " -I" s " ")))
           (pcase comm
             ('exec
-             (compile (format cc-release-command cc-exec cc-flags cc-links)))
+             (compile (format cc-release-command cc-exec cc-flags cc-links) t))
             ('debug
-             (compile (format cc-debug-command cc-exec cc-flags cc-links)))
+             (compile (format cc-debug-command cc-exec cc-flags cc-links) t))
             ('test
-             (compile (format cc-release-test-command cc-exec cc-flags cc-links)))
+             (compile (format cc-release-test-command cc-exec cc-flags cc-links) t))
             ('debug-test
-             (compile (format cc-debug-test-command cc-exec cc-flags cc-links)))
+             (compile (format cc-debug-test-command cc-exec cc-flags cc-links) t))
             ('bench
-             (compile (format cc-bench-command cc-exec cc-flags cc-links))))))))
+             (compile (format cc-bench-command cc-exec cc-flags cc-links) t)))))))
 
 (defun cc-playground-exec ()
   "Save the buffer then run clang compiler for executing the code."
