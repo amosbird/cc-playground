@@ -1,5 +1,5 @@
 CPPFLAGS = -MMD -MP
-CXXFLAGS ?= -std=c++17
+CXXFLAGS ?= -std=c++1z
 CXX_DBG_FLAGS = $(CXXFLAGS) -g
 CXX ?= g++
 LD = $(CXX)

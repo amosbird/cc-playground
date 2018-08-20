@@ -12,7 +12,7 @@
 ;; URL: https://github.com/amosbird/cc-playground
 ;; Keywords: tools, c/c++
 ;; Version: 1.1
-;; Package-Requires: ((emacs "25"))
+;; Package-Requires: ((direnv) (ivy "0.10.0") (emacs "26"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -38,6 +38,9 @@
 
 (require 'compile)
 (require 'time-stamp)
+(require 'dired)
+(require 'ivy)
+(require 'direnv)
 
 (defgroup cc-playground nil
   "Options specific to C++ Playground."
@@ -62,18 +65,6 @@ By default confirmation required."
   :type 'file
   :group 'cc-playground)
 
-(defcustom cc-template "
-#include <iostream>
-
-using namespace std;
-
-int mymain(int argc, char *argv[]) {
-    return 0;
-}"
-  "Default template for playground."
-  :type 'string
-  :group 'cc-playground)
-
 (defcustom cc-playground-hook nil
   "Hook when entering playground."
   :type 'hook
@@ -84,12 +75,11 @@ int mymain(int argc, char *argv[]) {
   :type 'hook
   :group 'cc-playground)
 
-(defvar cc-debug-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make deb && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./deb'\")")
-(defvar cc-debug-test-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make deb_test && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./deb_test'\")")
-(defvar cc-release-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make rel && printf \"\\n--------------------\\n\\n\" && ./rel")
-(defvar cc-release-test-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make rel_test && printf \"\\n--------------------\\n\\n\" && ./rel_test")
-(defvar cc-bench-command "CXX=\"%s\" CXXFLAGS=\"%s\" LDFLAGS=\"%s\" make bench && printf \"\\n--------------------\\n\\n\" && ./bench  --benchmark_color=false")
-;; (defvar cc-release-command "( [ './rel' -nt *.cpp ] || %s -std=c++17 *.cpp -o rel %s) && ./rel")
+(defvar cc-debug-command "make deb && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./deb'\")")
+(defvar cc-debug-test-command "make deb_test && (tmux switch-client -t amos; tmux run -t amos \"fish -c 'tmuxgdb -ex=start ./deb_test'\")")
+(defvar cc-release-command "make rel && printf \"\\n--------------------\\n\\n\" && ./rel")
+(defvar cc-release-test-command "make rel_test && printf \"\\n--------------------\\n\\n\" && ./rel_test")
+(defvar cc-bench-command "make bench && printf \"\\n--------------------\\n\\n\" && ./bench  --benchmark_color=false")
 
 (defun cc-switch-between-src-and-test ()
   "Switch between src and test file."
@@ -117,31 +107,23 @@ int mymain(int argc, char *argv[]) {
                          ("snippet"))))
     (concat (cc-playground-snippet-unique-dir file-name) "/" file-name ".cpp")))
 
-(defvar cc-flags)
-(defvar cc-links)
-(defvar cc-exec)
-
 (defun cc-playground-run (comm)
   "COMM."
   (if (cc-playground-inside)
       (progn
         (save-buffer t)
         (make-local-variable 'compile-command)
-        (let ((include-dirs (getenv "cquery_include_dirs"))
-              (cc-flags cc-flags))
-          (dolist (s (split-string include-dirs))
-            (setq cc-flags (concat cc-flags " -I" s " ")))
-          (pcase comm
-            ('exec
-             (compile (format cc-release-command cc-exec cc-flags cc-links) t))
-            ('debug
-             (compile (format cc-debug-command cc-exec cc-flags cc-links) t))
-            ('test
-             (compile (format cc-release-test-command cc-exec cc-flags cc-links) t))
-            ('debug-test
-             (compile (format cc-debug-test-command cc-exec cc-flags cc-links) t))
-            ('bench
-             (compile (format cc-bench-command cc-exec cc-flags cc-links) t)))))))
+        (pcase comm
+          ('exec
+           (compile cc-release-command t))
+          ('debug
+           (compile cc-debug-command t))
+          ('test
+           (compile cc-release-test-command t))
+          ('debug-test
+           (compile cc-debug-test-command t))
+          ('bench
+           (compile cc-bench-command t))))))
 
 (defun cc-playground-exec ()
   "Save the buffer then run clang compiler for executing the code."
@@ -174,11 +156,11 @@ int mymain(int argc, char *argv[]) {
   (if (cc-playground-inside)
       (let* ((oname (string-trim-right (shell-command-to-string (concat "basename " default-directory))))
              (nn (concat default-directory "../"))
-             (l (split-string oname "\\^")))
+             (l (split-string oname "--")))
         (fundamental-mode) ;; weird bug when renaming directory
         (if (= (length l) 1)
-            (dired-rename-file default-directory (concat nn name "^" oname) nil)
-          (dired-rename-file default-directory (concat nn name "^" (cadr l)) nil)))))
+            (dired-rename-file default-directory (concat nn name "--" oname) nil)
+          (dired-rename-file default-directory (concat nn name "--" (cadr l)) nil)))))
 
 ;;;###autoload
 (defun cc-playground-find-snippet ()
@@ -191,6 +173,14 @@ int mymain(int argc, char *argv[]) {
                      #'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x)))))
             :action (lambda (c) (find-file (concat (cdr c) "/snippet.cpp")))))
 
+(defun cc-playground--reload-dir-locals-for-all-buffer-in-this-directory ()
+  (let ((dir default-directory))
+      (dolist (buffer (buffer-list))
+        (with-current-buffer buffer
+          (when (equal default-directory dir))
+          (let ((enable-local-variables :all))
+            (hack-dir-local-variables-non-file-buffer))))))
+
 (defun cc-playground-copy ()
   "Copy a playground to a newly generated folder."
   (interactive)
@@ -200,7 +190,6 @@ int mymain(int argc, char *argv[]) {
              (snippet "snippet.cpp")
              (dirlocal ".dir-locals.el")
              (envrc ".envrc")
-             (cquery ".cquery")
              (ccls ".ccls")
              (makefile "Makefile")
              (mainfile "main.cpp")
@@ -208,7 +197,6 @@ int mymain(int argc, char *argv[]) {
              (testfile "test.cpp"))
         (copy-file snippet dst-dir)
         (copy-file envrc dst-dir)
-        (copy-file cquery dst-dir)
         (copy-file ccls dst-dir)
         (copy-file dirlocal dst-dir)
         (copy-file makefile dst-dir)
@@ -216,7 +204,7 @@ int mymain(int argc, char *argv[]) {
         (copy-file benchfile dst-dir)
         (copy-file testfile dst-dir)
         (find-file snippet-file-name)
-        (my-reload-dir-locals-for-all-buffer-in-this-directory)
+        (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
         (run-hooks 'cc-playground-hook))))
 
 (defconst cc-playground--loaddir
@@ -228,46 +216,29 @@ int mymain(int argc, char *argv[]) {
   "Run playground for C++ language in a new buffer."
   (interactive)
   (let ((snippet-file-name (cc-playground-snippet-file-name)))
-    (switch-to-buffer (create-file-buffer snippet-file-name))
-    (cc-playground-insert-template-head "snippet of code")
-    (insert cc-template)
-    (forward-line -2)
-    (c++-mode)
-    (cc-playground-mode)
-    (set-visited-file-name snippet-file-name t)
     (let* ((dir-name (concat cc-playground--loaddir "templates/"))
            (dst-dir (file-name-directory snippet-file-name))
            (envrc (concat dir-name ".envrc"))
-           (cquery (concat dir-name ".cquery"))
            (ccls (concat dir-name ".ccls"))
            (dirlocal (concat dir-name ".dir-locals.el"))
            (makefile (concat dir-name "Makefile"))
            (mainfile (concat dir-name "main.cpp"))
            (benchfile (concat dir-name "bench.cpp"))
+           (snippet (concat dir-name "snippet.cpp"))
            (testfile (concat dir-name "test.cpp")))
       (copy-file envrc dst-dir)
-      (copy-file cquery dst-dir)
       (copy-file ccls dst-dir)
       (copy-file dirlocal dst-dir)
       (copy-file makefile dst-dir)
       (copy-file mainfile dst-dir)
       (copy-file benchfile dst-dir)
-      (copy-file testfile dst-dir))
-    (save-buffer)
-    (my-reload-dir-locals-for-all-buffer-in-this-directory)
-    (lsp-cquery-enable)
+      (copy-file testfile dst-dir)
+      (copy-file snippet dst-dir))
+    (find-file snippet-file-name)
+    (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
+    (forward-line 8)
     (evil-open-below 1)
     (run-hooks 'cc-playground-hook)))
-
-(defun cc-playground-insert-template-head (description)
-  "Insert DESCRIPTION in the beginning of new snippets."
-  (insert "// " description " @ " (time-stamp-string "%:y-%02m-%02d %02H:%02M:%02S") "
-
-// === C++ Playground ===
-// Execute the snippet with Ctrl-Return
-// Remove the snippet completely with its dir and all files M-x `cc-playground-rm`
-
-"))
 
 (defun cc-playground-rm ()
   "Remove files of the current snippet together with directory of this snippet."
@@ -293,7 +264,7 @@ int mymain(int argc, char *argv[]) {
   "Get unique directory with PREFIX under `cc-playground-basedir`."
   (let ((dir-name (concat cc-playground-basedir "/"
                           (if (and prefix cc-playground-ask-file-name) (concat prefix "-"))
-                          (time-stamp-string "default^%:y-%02m-%02d-%02H%02M%02S"))))
+                          (time-stamp-string "default--%:y-%02m-%02d-%02H%02M%02S"))))
     (make-directory dir-name t)
     dir-name))
 
@@ -327,50 +298,59 @@ int mymain(int argc, char *argv[]) {
                           (shell-command-to-string "g++ -print-search-dirs | sed -n 's/:/ /g;s/libraries.*=//p' | xargs ls | egrep '\.a$'")))
             :action #'cc-playground-add-library-link))
 
+(defun cc-playground--direnv-get-rcfile ()
+  (string-trim (shell-command-to-string "direnv status | awk '/Loaded RC path/{ for (i = 4; i <= NF; i++) print $i}'")))
+
 (defun cc-playground-switch-optimization-flag (flag)
   "Switch optimization flag to FLAG."
   (interactive "c#flags: ")
-  (if (memq flag (list ?0 ?1 ?2 ?3 ?g))
-      (let ((flags (format "-O%c \\" flag)))
-        (with-current-buffer (find-file-noselect (concat default-directory ".dir-locals.el"))
-          (save-excursion
-            (goto-char (point-min))
-            (re-search-forward "(cc-flags . \"" nil 'stop-at-the-end 1)
-            (end-of-line)
-            (if (re-search-forward "^-O.*$" nil t)
-                (replace-match (concat flags "\\") nil nil)
-              (newline)
-              (insert flags))
-            (let ((inhibit-message t))
-              (save-buffer))
-            (message "using optimization flag %c" flag))))
-    (user-error (format "unknow optimization flag %c. known flags: 0, 1, 2, 3, g." flag))))
+  (when (cc-playground-inside)
+    (if (memq flag (list ?0 ?1 ?2 ?3 ?g))
+        (let ((buffer (find-file-noselect (cc-playground--direnv-get-rcfile)))
+              (flags (format "-O%c \\\\" flag)))
+          (with-current-buffer buffer
+            (save-excursion
+              (goto-char (point-min))
+              (re-search-forward "export CXXFLAGS=" nil 'stop-at-the-end 1)
+              (end-of-line)
+              (if (re-search-forward "^-O.* \\\\$" nil t)
+                  (replace-match flags nil nil)
+                (newline)
+                (insert flags))
+              (let ((inhibit-message t))
+                (save-buffer))
+              (direnv-update-environment)
+              (message "using optimization flag %c" flag))))
+      (user-error (format "unknow optimization flag %c. known flags: 0, 1, 2, 3, g." flag)))))
 
 (defun cc-playground-add-compilation-flags (flags)
   "Add compilation flags FLAGS."
   (interactive "M#flags: ")
-  (let ((flags (format "%s \\" flags)))
-    (with-current-buffer (find-file-noselect (concat default-directory ".dir-locals.el"))
-      (save-excursion
-        (goto-char (point-min))
-        (re-search-forward "(cc-flags . \"" nil 'stop-at-the-end 1)
-        (end-of-line)
-        (newline)
-        (insert flags)
-        (let ((inhibit-message t))
-          (save-buffer))))))
+  (when (cc-playground-inside)
+    (let ((buffer (find-file-noselect (cc-playground--direnv-get-rcfile)))
+          (flags (format "%s \\" flags)))
+      (with-current-buffer buffer
+        (save-excursion
+          (goto-char (point-min))
+          (re-search-forward "export CXXFLAGS=" nil 'stop-at-the-end 1)
+          (end-of-line)
+          (newline)
+          (insert flags)
+          (let ((inhibit-message t))
+            (save-buffer))
+          (direnv-update-environment))))))
 
 (defun cc-playground-change-compiler ()
   "Change the compiler."
   (interactive)
-  (let ((buffer (find-file-noselect (concat default-directory ".dir-locals.el"))))
-    (+popup-buffer buffer '((window-parameters (select . t))))
-    (with-current-buffer buffer
-      (goto-char (point-min))
-      (re-search-forward "(cc-exec . \"" nil 'stop-at-the-end 1)
-      (evil-insert 1))))
+  (when (cc-playground-inside)
+    (let ((buffer (find-file-noselect (cc-playground--direnv-get-rcfile))))
+      (+popup-buffer buffer '((window-parameters (select . t))))
+      (with-current-buffer buffer
+        (goto-char (point-min))
+        (re-search-forward "export CXX=" nil 'stop-at-the-end 1)
+        (evil-insert 1)))))
 
 (provide 'cc-playground)
 
 ;;; cc-playground.el ends here
-

@@ -1,7 +1,0 @@
-%clang
-%c -std=gnu11
-%cpp -std=c++17
-
-# Includes
--I/usr/local/include
--I/usr/include
