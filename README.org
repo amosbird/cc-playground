@@ -4,6 +4,9 @@ Currently it's tightly coupled with [[https://github.com/hlissner/doom-emacs][Do
 
 ** Requirements
 
-1. cquery
+1. direnv
 
-2. tmuxgdb
+** Optionals
+
+1. tmuxgdb
+2. leetcode-cli

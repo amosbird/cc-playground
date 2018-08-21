@@ -252,11 +252,9 @@ By default confirmation required."
       (copy-file debtestscript dst-dir)
       (copy-file testfile dst-dir)
       (copy-file snippet dst-dir)
-      (find-file snippet-file-name)
-      (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
       (if id
           (progn
-            (let ((buffer (find-file-noselect (cc-playground--direnv-get-rcfile))))
+            (let ((buffer (find-file-noselect (concat dst-dir ".envrc"))))
               (with-current-buffer buffer
                 (save-excursion
                   (goto-char (point-max))
@@ -265,11 +263,15 @@ By default confirmation required."
                   (let ((inhibit-message t))
                     (save-buffer))
                   (direnv-update-environment))))
+            (find-file snippet-file-name)
+            (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
             (make-symbolic-link "snippet.cpp" (concat id ".cpp"))
             (forward-line 8)
             (insert (shell-command-to-string (concat "leetcode show -cx -l cpp " id)))
             (goto-char (point-min))
             (save-buffer))
+        (find-file snippet-file-name)
+        (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
         (forward-line 8)
         (evil-open-below 1)))
     (run-hooks 'cc-playground-hook)))
