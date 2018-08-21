@@ -1,1 +1,3 @@
 %clang
+
+-DCC_PLAYGROUND
