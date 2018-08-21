@@ -278,7 +278,7 @@ By default confirmation required."
 (defun cc-playground-leetcode ()
   (interactive)
   (ivy-read "Leetcode: "
-            (split-string (shell-command-to-string "leetcode ls -q LD") "\n")
+            (split-string (shell-command-to-string "leetcode ls -L") "\n")
             :action (lambda (line)
                       (if (string-match "\\[ *\\([0-9]+\\)\\]" line)
                           (let* ((id (match-string 1 line))
