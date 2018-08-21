@@ -80,6 +80,7 @@ By default confirmation required."
 (defvar cc-release-command "make rel && printf \"\\n--------------------\\n\\n\" && ./rel")
 (defvar cc-release-test-command "make rel_test && printf \"\\n--------------------\\n\\n\" && ./rel_test")
 (defvar cc-bench-command "make bench && printf \"\\n--------------------\\n\\n\" && ./bench  --benchmark_color=false")
+(defvar cc-leetcode-command "leetcode submit ${PWD}/${LEETCODE_ID}.cpp")
 
 (defun cc-switch-between-src-and-test ()
   "Switch between src and test file."
@@ -99,13 +100,10 @@ By default confirmation required."
             ([?\M-\r]   . cc-playground-exec-test)
             ([S-return] . cc-playground-rm)))
 
-(defun cc-playground-snippet-file-name(&optional snippet-name)
-  "Get snippet file name from SNIPPET-NAME. Generate a random one if nil."
-  (let ((file-name (cond (snippet-name)
-                         (cc-playground-ask-file-name
-                          (read-string "C++ Playground filename: "))
-                         ("snippet"))))
-    (concat (cc-playground-snippet-unique-dir file-name) "/" file-name ".cpp")))
+(defun cc-playground-snippet-file-name(&optional id)
+  (if id
+      (concat (cc-playground-snippet-unique-dir-leetcode id) "/snippet.cpp")
+    (concat (cc-playground-snippet-unique-dir) "/snippet.cpp")))
 
 (defun cc-playground-run (comm)
   "COMM."
@@ -123,7 +121,9 @@ By default confirmation required."
           ('debug-test
            (compile cc-debug-test-command t))
           ('bench
-           (compile cc-bench-command t))))))
+           (compile cc-bench-command t))
+          ('leetcode
+           (compile cc-leetcode-command t))))))
 
 (defun cc-playground-exec ()
   "Save the buffer then run clang compiler for executing the code."
@@ -149,6 +149,16 @@ By default confirmation required."
   "Save the buffer then run clang compiler for executing the test."
   (interactive)
   (cc-playground-run 'bench))
+
+(defun cc-playground-leetcode-submit ()
+  "Save the buffer then run clang compiler for executing the test."
+  (interactive)
+  (if (and (cc-playground-inside) (getenv "LEETCODE_ID"))
+      (cc-playground-run 'leetcode)))
+
+(defun cc-playground-leetcode-solution ()
+  (interactive)
+  (insert (shell-command-to-string "leetcode show $LEETCODE_ID --solution")))
 
 (defun cc-playground-add-or-modify-tag (name)
   "Adding or modifying existing tag of a snippet using NAME."
@@ -216,10 +226,10 @@ By default confirmation required."
   "Directory that cc-playground was loaded from.")
 
 ;;;###autoload
-(defun cc-playground ()
+(defun cc-playground (&optional id)
   "Run playground for C++ language in a new buffer."
   (interactive)
-  (let ((snippet-file-name (cc-playground-snippet-file-name)))
+  (let ((snippet-file-name (cc-playground-snippet-file-name id)))
     (let* ((dir-name (concat cc-playground--loaddir "templates/"))
            (dst-dir (file-name-directory snippet-file-name))
            (envrc (concat dir-name ".envrc"))
@@ -241,12 +251,46 @@ By default confirmation required."
       (copy-file debscript dst-dir)
       (copy-file debtestscript dst-dir)
       (copy-file testfile dst-dir)
-      (copy-file snippet dst-dir))
-    (find-file snippet-file-name)
-    (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
-    (forward-line 8)
-    (evil-open-below 1)
+      (copy-file snippet dst-dir)
+      (find-file snippet-file-name)
+      (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
+      (if id
+          (progn
+            (let ((buffer (find-file-noselect (cc-playground--direnv-get-rcfile))))
+              (with-current-buffer buffer
+                (save-excursion
+                  (goto-char (point-max))
+                  (newline)
+                  (insert (concat "export LEETCODE_ID=" id))
+                  (let ((inhibit-message t))
+                    (save-buffer))
+                  (direnv-update-environment))))
+            (make-symbolic-link "snippet.cpp" (concat id ".cpp"))
+            (forward-line 8)
+            (insert (shell-command-to-string (concat "leetcode show -cx -l cpp " id)))
+            (goto-char (point-min))
+            (save-buffer))
+        (forward-line 8)
+        (evil-open-below 1)))
     (run-hooks 'cc-playground-hook)))
+
+;;;###autoload
+(defun cc-playground-leetcode ()
+  (interactive)
+  (ivy-read "Leetcode: "
+            (split-string (shell-command-to-string "leetcode ls -q LD") "\n")
+            :action (lambda (line)
+                      (if (string-match "\\[ *\\([0-9]+\\)\\]" line)
+                          (let* ((id (match-string 1 line))
+                                 (l (-filter (lambda (a) (string-prefix-p (concat "leetcode-" id "--") (car a)))
+                                             (mapcar (lambda (a) (cons (file-name-nondirectory (car a)) (car a)))
+                                                     (sort
+                                                      (directory-files-and-attributes cc-playground-basedir t "^[^.]" 'nosort)
+                                                      #'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))))
+                            (if l
+                                (find-file (concat (cdr (car l)) "/snippet.cpp"))
+                              (cc-playground id)))))
+            :require-match t))
 
 (defun cc-playground-rm ()
   "Remove files of the current snippet together with directory of this snippet."
@@ -273,6 +317,12 @@ By default confirmation required."
   (let ((dir-name (concat cc-playground-basedir "/"
                           (if (and prefix cc-playground-ask-file-name) (concat prefix "-"))
                           (time-stamp-string "default--%:y-%02m-%02d-%02H%02M%02S"))))
+    (make-directory dir-name t)
+    dir-name))
+
+(defun cc-playground-snippet-unique-dir-leetcode (id)
+  (let ((dir-name (concat cc-playground-basedir "/"
+                          (time-stamp-string (concat "leetcode-" id "--%:y-%02m-%02d-%02H%02M%02S")))))
     (make-directory dir-name t)
     dir-name))
 
