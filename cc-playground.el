@@ -314,10 +314,8 @@ By default confirmation required."
     (message "Won't delete this! Because %s is not under the path %s. Remove the snippet manually!"
              (buffer-file-name) cc-playground-basedir)))
 
-(defun cc-playground-snippet-unique-dir (prefix)
-  "Get unique directory with PREFIX under `cc-playground-basedir`."
+(defun cc-playground-snippet-unique-dir ()
   (let ((dir-name (concat cc-playground-basedir "/"
-                          (if (and prefix cc-playground-ask-file-name) (concat prefix "-"))
                           (time-stamp-string "default--%:y-%02m-%02d-%02H%02M%02S"))))
     (make-directory dir-name t)
     dir-name))
@@ -405,7 +403,7 @@ By default confirmation required."
   (interactive)
   (when (cc-playground-inside)
     (let ((buffer (find-file-noselect (cc-playground--direnv-get-rcfile))))
-      (+popup-buffer buffer '((window-parameters (select . t))))
+      (+popup-buffer buffer '((window-parameters (select . t)) (window-width . 0.5) (side . right)))
       (with-current-buffer buffer
         (goto-char (point-min))
         (re-search-forward "export CXX=" nil 'stop-at-the-end 1)
