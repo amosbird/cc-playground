@@ -1,6 +1,5 @@
-%clang
+c++
 
-%c -std=gnu11
 %cpp -std=c++1z
 
 -DCC_PLAYGROUND
