@@ -80,7 +80,7 @@ By default confirmation required."
 (defvar cc-release-command "make rel && printf \"\\n--------------------\\n\\n\" && ./rel")
 (defvar cc-release-test-command "make rel_test && printf \"\\n--------------------\\n\\n\" && ./rel_test")
 (defvar cc-bench-command "make bench && printf \"\\n--------------------\\n\\n\" && ./bench  --benchmark_color=false")
-(defvar cc-leetcode-command "leetcode submit ${PWD}/${LEETCODE_ID}.cpp")
+(defvar cc-leetcode-command "leetcode submit ${PWD}/${LEETCODE_ID}.cpp | head -c 1024")
 
 (defun cc-switch-between-src-and-test ()
   "Switch between src and test file."
@@ -183,14 +183,6 @@ By default confirmation required."
                      #'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x)))))
             :action (lambda (c) (find-file (concat (cdr c) "/snippet.cpp")))))
 
-(defun cc-playground--reload-dir-locals-for-all-buffer-in-this-directory ()
-  (let ((dir default-directory))
-      (dolist (buffer (buffer-list))
-        (with-current-buffer buffer
-          (when (equal default-directory dir))
-          (let ((enable-local-variables :all))
-            (hack-dir-local-variables-non-file-buffer))))))
-
 (defun cc-playground-copy ()
   "Copy a playground to a newly generated folder."
   (interactive)
@@ -218,7 +210,6 @@ By default confirmation required."
         (copy-file benchfile dst-dir)
         (copy-file testfile dst-dir)
         (find-file snippet-file-name)
-        (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
         (run-hooks 'cc-playground-hook))))
 
 (defconst cc-playground--loaddir
@@ -264,14 +255,12 @@ By default confirmation required."
                     (save-buffer))
                   (direnv-update-environment))))
             (find-file snippet-file-name)
-            (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
             (make-symbolic-link "snippet.cpp" (concat id ".cpp"))
             (forward-line 9)
             (insert (shell-command-to-string (concat "leetcode show -cx -l cpp " id)))
             (goto-char (point-min))
             (save-buffer))
         (find-file snippet-file-name)
-        (cc-playground--reload-dir-locals-for-all-buffer-in-this-directory)
         (forward-line 9)
         (evil-open-below 1)))
     (run-hooks 'cc-playground-hook)))
