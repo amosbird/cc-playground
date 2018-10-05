@@ -1,5 +1,7 @@
 #include <benchmark/benchmark.h>
+#define NOMAIN
 #include "snippet.cpp"
+#undef NOMAIN
 
 class MyFixture : public benchmark::Fixture {};
 

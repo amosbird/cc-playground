@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
+#define NOMAIN
 #include "snippet.cpp"
+#undef NOMAIN
 
 class SnippetTest : public testing::Test {
 protected:

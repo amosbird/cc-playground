@@ -11,10 +11,10 @@ deb_test: test.deb.o snippet.deb.o
 rel_test: test.rel.o snippet.rel.o
 	$(LD) $< -o $@ $(LDFLAGS) -lgtest_main -lgtest
 
-deb: main.deb.o snippet.deb.o
+deb: snippet.deb.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
-rel: main.rel.o snippet.rel.o
+rel: snippet.rel.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
 bench: bench.rel.o snippet.rel.o
@@ -29,7 +29,7 @@ bench: bench.rel.o snippet.rel.o
 clean:
 	$(RM) -rf *.o *.d deb rel deb_test rel_test
 
-DEPS := main.deb.d main.rel.d test.deb.d test.rel.d snippet.deb.d snippet.rel.d
+DEPS := bench.deb.d bench.rel.d test.deb.d test.rel.d snippet.deb.d snippet.rel.d
 -include $(DEPS)
 
 .PHONY: clean
