@@ -192,7 +192,7 @@ By default confirmation required."
              (snippet "snippet.cpp")
              (dirlocal ".dir-locals.el")
              (envrc ".envrc")
-             (ccls ".ccls")
+             (ccls ".ccls-root")
              (makefile "Makefile")
              (debscript "deb.script"))
         (copy-file snippet dst-dir)
@@ -216,7 +216,7 @@ By default confirmation required."
     (let* ((dir-name (concat cc-playground--loaddir "templates/"))
            (dst-dir (file-name-directory snippet-file-name))
            (envrc (concat dir-name ".envrc"))
-           (ccls (concat dir-name ".ccls"))
+           (ccls (concat dir-name ".ccls-root"))
            (dirlocal (concat dir-name ".dir-locals.el"))
            (makefile (concat dir-name "Makefile"))
            (debscript (concat dir-name "deb.script"))
@@ -342,7 +342,7 @@ By default confirmation required."
           (with-current-buffer buffer
             (save-excursion
               (goto-char (point-min))
-              (re-search-forward "export CXXFLAGS=" nil 'stop-at-the-end 1)
+              (re-search-forward "export ccls_cxx_flags=" nil 'stop-at-the-end 1)
               (end-of-line)
               (if (re-search-forward "^-O.* \\\\$" nil t)
                   (replace-match (regexp-quote flags) nil nil)

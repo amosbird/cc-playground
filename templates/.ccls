@@ -1,5 +1,0 @@
-c++
-
-%cpp -std=c++1z
-
--DCC_PLAYGROUND
