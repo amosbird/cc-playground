@@ -60,7 +60,7 @@ By default confirmation required."
   :type 'boolean
   :group 'cc-playground)
 
-(defcustom cc-playground-basedir "~/cc/playground"
+(defcustom cc-playground-basedir "~/cc-playground"
   "Base directory for playground snippets."
   :type 'file
   :group 'cc-playground)
