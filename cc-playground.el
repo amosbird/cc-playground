@@ -177,10 +177,12 @@ By default confirmation required."
   "List all snippets using `ivy-read'."
   (interactive)
   (ivy-read "Browse cc snippet: "
-            (mapcar (lambda (a) (cons (file-name-nondirectory (car a)) (car a)))
-                    (sort
-                     (directory-files-and-attributes cc-playground-basedir t "^[^.|leetcode--]" 'nosort)
-                     #'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x)))))
+            (--remove (or (s-starts-with-p "." (car it))
+                          (s-starts-with-p "leetcode--" (car it)))
+                      (mapcar (lambda (a) (cons (file-name-nondirectory (car a)) (car a)))
+                              (sort
+                               (directory-files-and-attributes cc-playground-basedir t nil 'nosort)
+                               #'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
             :action (lambda (c) (find-file (concat (cdr c) "/snippet.cpp")))))
 
 (defun cc-playground-copy ()
