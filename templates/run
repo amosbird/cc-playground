@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+export LD_PRELOAD=$cc_ld_preload
+export LD_LIBRARY_PATH=$cc_ld_library_path
+
+case $1 in
+debug)
+	tmux switch-client -t amos
+	tmux run -t amos 'tmuxgdb -x deb.script'
+	;;
+debug_test)
+	tmux switch-client -t amos
+	tmux run -t amos 'tmuxgdb -x deb_test.script'
+	;;
+bench)
+	./bench --benchmark_color=false
+	;;
+test)
+	./rel_test
+	;;
+*)
+	./rel
+	;;
+esac

@@ -75,11 +75,11 @@ By default confirmation required."
   :type 'hook
   :group 'cc-playground)
 
-(defvar cc-debug-command "make deb && (tmux switch-client -t amos; tmux run -t amos 'tmuxgdb -x deb.script')")
-(defvar cc-debug-test-command "make deb_test && (tmux switch-client -t amos; tmux run -t amos 'tmuxgdb -x deb_test.script')")
-(defvar cc-release-command "make rel && printf \"\\n--------------------\\n\\n\" && ./rel")
-(defvar cc-release-test-command "make rel_test && printf \"\\n--------------------\\n\\n\" && ./rel_test")
-(defvar cc-bench-command "make bench && printf \"\\n--------------------\\n\\n\" && ./bench  --benchmark_color=false")
+(defvar cc-debug-command "make deb && run debug")
+(defvar cc-debug-test-command "make deb_test && run debug_test")
+(defvar cc-release-command "make rel && run")
+(defvar cc-release-test-command "make rel_test && run test")
+(defvar cc-bench-command "make bench && run bench")
 (defvar cc-leetcode-command "leetcode submit ${PWD}/${LEETCODE_ID}.cpp | head -c 1024")
 
 (defun cc-switch-between-src-and-test ()
@@ -196,6 +196,7 @@ By default confirmation required."
              (envrc ".envrc")
              (ccls ".ccls")
              (ccls-root ".ccls-root")
+             (run "run")
              (makefile "Makefile")
              (debscript "deb.script"))
         (copy-file snippet dst-dir)
@@ -205,6 +206,7 @@ By default confirmation required."
         (copy-file dirlocal dst-dir)
         (copy-file makefile dst-dir)
         (copy-file debscript dst-dir)
+        (copy-file run dst-dir)
         (find-file snippet-file-name)
         (run-hooks 'cc-playground-hook))))
 
@@ -225,6 +227,7 @@ By default confirmation required."
            (dirlocal (concat dir-name ".dir-locals.el"))
            (makefile (concat dir-name "Makefile"))
            (debscript (concat dir-name "deb.script"))
+           (run (concat dir-name "run"))
            (snippet (concat dir-name "snippet.cpp")))
       (copy-file envrc dst-dir)
       (copy-file ccls dst-dir)
@@ -232,6 +235,7 @@ By default confirmation required."
       (copy-file dirlocal dst-dir)
       (copy-file makefile dst-dir)
       (copy-file debscript dst-dir)
+      (copy-file run dst-dir)
       (copy-file snippet dst-dir)
       (if id
           (progn
