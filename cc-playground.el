@@ -75,11 +75,11 @@ By default confirmation required."
   :type 'hook
   :group 'cc-playground)
 
-(defvar cc-debug-command "make deb && run debug")
-(defvar cc-debug-test-command "make deb_test && run debug_test")
-(defvar cc-release-command "make rel && run")
-(defvar cc-release-test-command "make rel_test && run test")
-(defvar cc-bench-command "make bench && run bench")
+(defvar cc-debug-command "make deb && ./run debug")
+(defvar cc-debug-test-command "make deb_test && ./run debug_test")
+(defvar cc-release-command "make rel && ./run")
+(defvar cc-release-test-command "make rel_test && ./run test")
+(defvar cc-bench-command "make bench && ./run bench")
 (defvar cc-leetcode-command "leetcode submit ${PWD}/${LEETCODE_ID}.cpp | head -c 1024")
 
 (defun cc-switch-between-src-and-test ()
