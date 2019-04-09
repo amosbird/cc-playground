@@ -11,11 +11,11 @@ Output :
 case $1 in
 debug)
     tmux switch-client -t amos
-    tmux run -t amos 'tmuxgdb -x deb.script'
+    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos 'tmuxgdb -x deb.script'
     ;;
 debug_test)
     tmux switch-client -t amos
-    tmux run -t amos 'tmuxgdb -x deb_test.script'
+    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos 'tmuxgdb -x deb_test.script'
     ;;
 bench)
     ./bench --benchmark_color=false
