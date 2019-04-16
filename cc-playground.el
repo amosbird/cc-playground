@@ -170,7 +170,8 @@ By default confirmation required."
         (fundamental-mode) ;; weird bug when renaming directory
         (if (= (length l) 1)
             (dired-rename-file default-directory (concat nn name "--" oname) nil)
-          (dired-rename-file default-directory (concat nn name "--" (cadr l)) nil)))))
+          (dired-rename-file default-directory (concat nn name "--" (cadr l)) nil))
+        (doom-modeline-update-buffer-file-name))))
 
 ;;;###autoload
 (defun cc-playground-find-snippet ()
@@ -190,23 +191,8 @@ By default confirmation required."
   (interactive)
   (if (cc-playground-inside)
       (let* ((snippet-file-name (cc-playground-snippet-file-name))
-             (dst-dir (file-name-directory snippet-file-name))
-             (snippet "snippet.cpp")
-             (dirlocal ".dir-locals.el")
-             (envrc ".envrc")
-             (ccls ".ccls")
-             (ccls-root ".ccls-root")
-             (run "run")
-             (makefile "Makefile")
-             (debscript "deb.script"))
-        (copy-file snippet dst-dir)
-        (copy-file envrc dst-dir)
-        (copy-file ccls dst-dir)
-        (copy-file ccls-root dst-dir)
-        (copy-file dirlocal dst-dir)
-        (copy-file makefile dst-dir)
-        (copy-file debscript dst-dir)
-        (copy-file run dst-dir)
+             (dst-dir (file-name-directory snippet-file-name)))
+        (shell-command! (concat "cp -r . " dst-dir))
         (find-file snippet-file-name)
         (run-hooks 'cc-playground-hook))))
 
@@ -219,24 +205,9 @@ By default confirmation required."
   "Run playground for C++ language in a new buffer."
   (interactive)
   (let ((snippet-file-name (cc-playground-snippet-file-name id)))
-    (let* ((dir-name (concat cc-playground--loaddir "templates/"))
-           (dst-dir (file-name-directory snippet-file-name))
-           (envrc (concat dir-name ".envrc"))
-           (ccls (concat dir-name ".ccls"))
-           (ccls-root (concat dir-name ".ccls-root"))
-           (dirlocal (concat dir-name ".dir-locals.el"))
-           (makefile (concat dir-name "Makefile"))
-           (debscript (concat dir-name "deb.script"))
-           (run (concat dir-name "run"))
-           (snippet (concat dir-name "snippet.cpp")))
-      (copy-file envrc dst-dir)
-      (copy-file ccls dst-dir)
-      (copy-file ccls-root dst-dir)
-      (copy-file dirlocal dst-dir)
-      (copy-file makefile dst-dir)
-      (copy-file debscript dst-dir)
-      (copy-file run dst-dir)
-      (copy-file snippet dst-dir)
+    (let* ((dir-name (concat cc-playground--loaddir "templates"))
+           (dst-dir (directory-file-name (file-name-directory snippet-file-name))))
+      (shell-command! (format "cp -r %s %s" dir-name dst-dir))
       (if id
           (progn
             (let ((buffer (find-file-noselect (concat dst-dir ".envrc"))))
@@ -300,13 +271,11 @@ By default confirmation required."
 (defun cc-playground-snippet-unique-dir ()
   (let ((dir-name (concat cc-playground-basedir "/"
                           (time-stamp-string "default--%:y-%02m-%02d-%02H%02M%02S"))))
-    (make-directory dir-name t)
     dir-name))
 
 (defun cc-playground-snippet-unique-dir-leetcode (id)
   (let ((dir-name (concat cc-playground-basedir "/"
                           (time-stamp-string (concat "leetcode-" id "--%:y-%02m-%02d-%02H%02M%02S")))))
-    (make-directory dir-name t)
     dir-name))
 
 (defun cc-playground-inside ()
