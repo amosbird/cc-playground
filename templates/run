@@ -11,11 +11,11 @@ Output :
 case "$1" in
 debug)
     tmux switch-client -t amos
-    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos 'tmuxgdb deb'
+    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos "fish -c 'tmuxgdb deb'"
     ;;
 debug_test)
     tmux switch-client -t amos
-    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos 'tmuxgdb deb_test'
+    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos "fish -c 'tmuxgdb deb_test'"
     ;;
 bench)
     ./bench --benchmark_color=false
