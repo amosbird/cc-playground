@@ -207,7 +207,7 @@ By default confirmation required."
   (let ((snippet-file-name (cc-playground-snippet-file-name id)))
     (let* ((dir-name (concat cc-playground--loaddir "templates"))
            (dst-dir (directory-file-name (file-name-directory snippet-file-name))))
-      (shell-command! (format "cp -r %s %s" dir-name dst-dir))
+      (shell-command! (format "cp -rL %s %s" dir-name dst-dir))
       (if id
           (progn
             (let ((buffer (find-file-noselect (concat dst-dir ".envrc"))))
