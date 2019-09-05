@@ -91,6 +91,7 @@ By default confirmation required."
       (if (string= name "test")
           (find-file (concat default-directory "snippet.cpp"))))))
 
+;;;###autoload
 (define-minor-mode cc-playground-mode
   "A place for playing with c++ code."
   :init-value nil
