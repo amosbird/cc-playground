@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-export LD_PRELOAD=$cc_ld_preload
-export LD_LIBRARY_PATH=$cc_ld_library_path
-
 echo "
 
 Output :
@@ -11,19 +8,20 @@ Output :
 case "$1" in
 debug)
     tmux switch-client -t amos
-    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos "fish -c 'tmuxgdb deb'"
+    tmux run -t amos "fish -c 'tmuxgdb deb'"
     ;;
 debug_test)
     tmux switch-client -t amos
-    tmux setenv LD_PRELOAD "$LD_PRELOAD" \; setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \; run -t amos "fish -c 'tmuxgdb deb_test'"
+    tmux run -t amos "fish -c 'tmuxgdb deb_test'"
     ;;
 bench)
-    ./bench --benchmark_color=false
+    env LD_PRELOAD="$cc_ld_preload" LD_LIBRARY_PATH="$cc_ld_library_path" ./bench --benchmark_color=false
     ;;
 test)
-    ./rel_test
+    env LD_PRELOAD="$cc_ld_preload" LD_LIBRARY_PATH="$cc_ld_library_path" ./rel_test
     ;;
 *)
-    ./rel
+    env LD_PRELOAD="$cc_ld_preload" LD_LIBRARY_PATH="$cc_ld_library_path" ./rel
+    # ./rel
     ;;
 esac
