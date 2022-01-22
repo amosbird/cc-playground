@@ -1,7 +1,7 @@
 CPPFLAGS = -MMD -MP -DCC_PLAYGROUND
-CXXFLAGS ?= -std=c++1z
+CXXFLAGS ?= -std=c++2a
 CXX_DBG_FLAGS = $(CXXFLAGS) -g -O0
-CXX ?= g++
+CXX ?= clang++
 LD = $(CXX)
 LDFLAGS := $(CXXFLAGS) $(LDFLAGS)
 
